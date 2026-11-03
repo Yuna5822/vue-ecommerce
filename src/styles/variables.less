@@ -1,0 +1,32 @@
+// Less 全局变量与媒体查询断点（通过 vite additionalData 全局注入）
+
+// 主题色（粉色系）
+@primary-color: #ff69b4;
+@primary-color-dark: #ff1493;
+@primary-color-light: #ffc0cb;
+@price-color: #e6007a;
+@text-main: #333333;
+@text-sub: #999999;
+@bg-color: #fff5f8;
+@border-color: #ffe0ec;
+
+// 媒体查询断点（移动优先）
+@mobile: ~'(max-width: 767px)';
+@tablet: ~'(min-width: 768px) and (max-width: 991px)';
+@pc: ~'(min-width: 992px)';
+@not-mobile: ~'(min-width: 768px)';
+
+// 常用混入
+.text-ellipsis() {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// 多行截断（行数可变参数）
+.text-clamp(@line: 2) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: @line;
+  overflow: hidden;
+}
