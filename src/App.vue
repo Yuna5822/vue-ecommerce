@@ -12,8 +12,15 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import TabBar from '@/components/TabBar.vue'
+import { fetchCart } from '@/store/cart'
+
+onMounted(() => {
+  // 已登录则从后端拉取购物车
+  if (localStorage.getItem('token')) fetchCart()
+})
 </script>
 
 <style lang="less">

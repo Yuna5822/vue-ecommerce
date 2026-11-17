@@ -6,10 +6,12 @@
         <el-icon :size="32"><User /></el-icon>
       </el-avatar>
       <div class="user-info">
-        <h2>您好，游客</h2>
-        <p>登录后享受更多优惠</p>
+        <h2 v-if="user">{{ user.nickname }}</h2>
+        <h2 v-else>您好，游客</h2>
+        <p>{{ user ? '欢迎回来' : '登录后享受更多优惠' }}</p>
       </div>
-      <el-button round size="small" @click="onLogin">立即登录</el-button>
+      <el-button v-if="!user" round size="small" @click="loginVisible = true">立即登录</el-button>
+      <el-button v-else round size="small" @click="onLogout">退出</el-button>
     </div>
 
     <div class="container">
@@ -55,10 +57,27 @@
         </el-cell-group>
       </section>
     </div>
+
+    <!-- 登录弹窗 -->
+    <el-dialog v-model="loginVisible" title="登录" width="360px" center>
+      <el-form :model="form" label-width="70px" @keyup.enter="onSubmit">
+        <el-form-item label="账号">
+          <el-input v-model="form.username" placeholder="请输入账号" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" style="width:100%" :loading="loading" @click="onSubmit">登录</el-button>
+        </el-form-item>
+        <p class="tip">测试账号：test / 123456</p>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   User,
@@ -72,6 +91,51 @@ import {
   Headset,
   Ticket
 } from '@element-plus/icons-vue'
+import { login, getUserInfo } from '@/api'
+import { fetchCart } from '@/store/cart'
+
+const user = ref(null)
+const loginVisible = ref(false)
+const loading = ref(false)
+const form = ref({ username: '', password: '' })
+
+onMounted(() => {
+  if (localStorage.getItem('token')) loadUser()
+})
+
+async function loadUser() {
+  try {
+    user.value = await getUserInfo()
+    await fetchCart()
+  } catch (e) {
+    localStorage.removeItem('token')
+  }
+}
+
+async function onSubmit() {
+  if (!form.value.username || !form.value.password) {
+    return ElMessage.warning('请输入账号和密码')
+  }
+  loading.value = true
+  try {
+    const res = await login(form.value)
+    localStorage.setItem('token', res.token)
+    user.value = res.user
+    loginVisible.value = false
+    ElMessage.success('登录成功')
+    await fetchCart()
+  } catch (e) {
+    // 错误已由响应拦截器提示
+  } finally {
+    loading.value = false
+  }
+}
+
+function onLogout() {
+  localStorage.removeItem('token')
+  user.value = null
+  ElMessage.success('已退出登录')
+}
 
 const orderMenus = [
   { label: '待付款', icon: Wallet },
@@ -90,7 +154,6 @@ const serviceMenus = [
 const settingMenus = ['账号与安全', '消息通知', '通用设置', '关于易购商城']
 
 const onTodo = () => ElMessage.info('演示功能，敬请期待')
-const onLogin = () => ElMessage.info('演示项目未接入登录')
 </script>
 
 <style lang="less" scoped>
@@ -210,5 +273,12 @@ const onLogin = () => ElMessage.info('演示项目未接入登录')
       color: @text-sub;
     }
   }
+}
+
+.tip {
+  text-align: center;
+  font-size: 0.24rem;
+  color: @text-sub;
+  margin-top: -0.16rem;
 }
 </style>

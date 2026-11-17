@@ -1,16 +1,14 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { mockAdapter } from './mock'
 
 /**
  * axios 二次封装
- * adapter: mockAdapter —— 当前使用 mock 数据；
- * 接入真实后端时删除 adapter，并修改 baseURL 即可，业务代码零改动
+ * baseURL: /api —— 通过 Vite dev 代理转发到后端 http://localhost:3000
+ * 生产环境可改为后端实际地址
  */
 const service = axios.create({
   baseURL: '/api',
-  timeout: 10000,
-  adapter: mockAdapter
+  timeout: 10000
 })
 
 // 请求拦截器：统一携带 token 等

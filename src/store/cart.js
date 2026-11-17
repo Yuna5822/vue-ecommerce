@@ -1,49 +1,60 @@
 import { reactive, computed, watch } from 'vue'
+import { getCart, addCart, updateCart, deleteCart, selectAllCart } from '@/api'
 
 /**
- * 购物车全局状态（轻量方案：reactive + localStorage 持久化）
- * 不引入 pinia，保持项目精简；数据驱动视图，任何组件操作后自动同步
+ * 购物车全局状态
+ * - 已登录：后端为数据源，本地 state 作为 UI 缓存，操作时同步到后端
+ * - 未登录：localStorage 本地缓存，不影响体验
  */
+const isLogin = () => !!localStorage.getItem('token')
 
-// 兼容：把历史遗留的旧图片路径统一迁移到当前命名规则 goods{id}.png
-// 用户在路径演化过程中（goodsImage → goods，svg → png）加入购物车的商品，
-// img 字段存的是当时的 URL，不会自动跟着 mock.js 变，这里一次性修正
-function migrateImgPaths(list) {
-  return list.map((item) => {
-    if (!item.img) return item
-    const id = item.id
-    const expected = `/images/goods/goods${id}.png`
-    // 已经是最新路径的跳过
-    if (item.img === expected) return item
-    // 包含旧片段的统一替换
-    const migrated = item.img
-      .replace(/goodsImage/g, 'goods')          // goodsImage101 → goods101
-      .replace(/\/g(\d+)\.svg$/, '/goods$1.png') // g101.svg → goods101.png
-      .replace(/\.svg$/, '.png')
-      .replace(/\/placeholder\.(svg|png)$/, expected)
-    return { ...item, img: migrated }
-  })
+const state = reactive({ list: [] })
+
+// 未登录时从 localStorage 读取
+if (!isLogin()) {
+  state.list = JSON.parse(localStorage.getItem('cart') || '[]')
 }
 
-const migrated = migrateImgPaths(JSON.parse(localStorage.getItem('cart') || '[]'))
-if (migrated.length) localStorage.setItem('cart', JSON.stringify(migrated))
-const state = reactive({ list: migrated })
-
-// 任何变更自动持久化
 watch(
   () => state.list,
-  (val) => localStorage.setItem('cart', JSON.stringify(val)),
+  (val) => {
+    if (!isLogin()) localStorage.setItem('cart', JSON.stringify(val))
+  },
   { deep: true }
 )
 
+/** 从后端拉取购物车（登录后调用） */
+export async function fetchCart() {
+  if (!isLogin()) return
+  try {
+    const list = await getCart()
+    state.list = list.map((c) => ({
+      id: c.goodsId,
+      cartId: c.id,
+      title: c.title,
+      price: c.price,
+      img: c.img,
+      sku: '默认款',
+      count: c.quantity,
+      checked: !!c.selected
+    }))
+  } catch (e) {
+    // 未登录或请求失败时忽略
+  }
+}
+
 /** 加入购物车 */
-export function addToCart(goods, sku = '默认款', count = 1) {
+export async function addToCart(goods, sku = '默认款', count = 1) {
   const item = state.list.find((i) => i.id === goods.id && i.sku === sku)
   if (item) {
     item.count += count
+    if (item.cartId && isLogin()) {
+      await updateCart(item.cartId, { quantity: item.count }).catch(() => {})
+    }
   } else {
     state.list.push({
       id: goods.id,
+      cartId: null,
       title: goods.title,
       price: goods.price,
       img: goods.img,
@@ -51,35 +62,66 @@ export function addToCart(goods, sku = '默认款', count = 1) {
       count,
       checked: true
     })
+    if (isLogin()) {
+      try {
+        await addCart({ goodsId: goods.id, quantity: count })
+        await fetchCart() // 刷新拿到 cartId
+      } catch (e) {}
+    }
   }
 }
 
 /** 更新数量 */
-export function updateCount(id, sku, count) {
+export async function updateCount(id, sku, count) {
   const item = state.list.find((i) => i.id === id && i.sku === sku)
-  if (item) item.count = count
+  if (item) {
+    item.count = count
+    if (item.cartId && isLogin()) {
+      await updateCart(item.cartId, { quantity: count }).catch(() => {})
+    }
+  }
 }
 
 /** 删除商品 */
-export function removeFromCart(id, sku) {
+export async function removeFromCart(id, sku) {
   const idx = state.list.findIndex((i) => i.id === id && i.sku === sku)
-  if (idx > -1) state.list.splice(idx, 1)
+  if (idx > -1) {
+    const item = state.list[idx]
+    state.list.splice(idx, 1)
+    if (item.cartId && isLogin()) {
+      await deleteCart(item.cartId).catch(() => {})
+    }
+  }
 }
 
 /** 切换勾选 */
-export function toggleCheck(id, sku) {
+export async function toggleCheck(id, sku) {
   const item = state.list.find((i) => i.id === id && i.sku === sku)
-  if (item) item.checked = !item.checked
+  if (item) {
+    item.checked = !item.checked
+    if (item.cartId && isLogin()) {
+      await updateCart(item.cartId, { selected: item.checked ? 1 : 0 }).catch(() => {})
+    }
+  }
 }
 
 /** 全选 / 反选 */
-export function toggleCheckAll(checked) {
+export async function toggleCheckAll(checked) {
   state.list.forEach((i) => (i.checked = checked))
+  if (isLogin()) {
+    await selectAllCart({ selected: checked ? 1 : 0 }).catch(() => {})
+  }
 }
 
 /** 清空已勾选商品（结算） */
-export function clearChecked() {
+export async function clearChecked() {
+  const checked = state.list.filter((i) => i.checked)
   state.list = state.list.filter((i) => !i.checked)
+  if (isLogin()) {
+    for (const item of checked) {
+      if (item.cartId) await deleteCart(item.cartId).catch(() => {})
+    }
+  }
 }
 
 // 派生数据

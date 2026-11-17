@@ -36,6 +36,9 @@ const formatSales = (n) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n)
   border-radius: 0.12rem;
   overflow: hidden;
   cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   // CSS3 过渡与阴影
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
@@ -51,11 +54,14 @@ const formatSales = (n) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n)
   .img-box {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    padding-top: 100%; // 1:1 正方形，比 aspect-ratio 更稳定
     background: #fafafa;
     overflow: hidden;
 
     img {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -71,6 +77,7 @@ const formatSales = (n) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n)
       background: linear-gradient(135deg, #ff69b4, #ff1493);
       color: #fff;
       font-size: 0.18rem;
+      z-index: 1;
     }
   }
 
@@ -80,6 +87,9 @@ const formatSales = (n) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n)
 
   .info {
     padding: 0.14rem 0.16rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
     .title {
       font-size: 0.26rem;
@@ -90,31 +100,45 @@ const formatSales = (n) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n)
     }
 
     .bottom {
-      margin-top: 0.1rem;
+      margin-top: auto;
+      padding-top: 0.1rem;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
+      gap: 0.06rem;
+
+      .price-box {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
 
       .price {
         color: @price-color;
-        font-size: 0.36rem;
+        font-size: 0.32rem;
         font-weight: bold;
+        white-space: nowrap;
 
         i {
           font-style: normal;
-          font-size: 0.22rem;
+          font-size: 0.2rem;
         }
       }
 
       .origin {
-        margin-left: 0.08rem;
+        margin-left: 0.06rem;
         color: @text-sub;
-        font-size: 0.2rem;
+        font-size: 0.18rem;
+        white-space: nowrap;
       }
 
       .sales {
         color: @text-sub;
-        font-size: 0.2rem;
+        font-size: 0.18rem;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
     }
   }

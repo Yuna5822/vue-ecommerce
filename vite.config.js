@@ -20,6 +20,13 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0', // 允许局域网手机访问，方便真机调试移动适配
-    port: 5173
+    port: 5173,
+    proxy: {
+      // 前端 /api 请求代理到 Express 后端
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
+    }
   }
 })

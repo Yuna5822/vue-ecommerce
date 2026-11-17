@@ -12,6 +12,7 @@ dist-ssr/
 # 编辑器
 .vscode/
 .idea/
+.trae/
 *.suo
 *.ntvs*
 *.njsproj
