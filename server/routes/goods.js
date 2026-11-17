@@ -5,12 +5,16 @@ const router = Router()
 
 // GET /api/goods 商品列表（categoryId / keyword / 分页）
 router.get('/', async (req, res) => {
-  const { categoryId = 0, keyword = '', page = 1, pageSize = 10 } = req.query
+  let { categoryId = 0, keyword = '', page = 1, pageSize = 10 } = req.query
+  // 边界防御：防止负数 / 非数字导致 SQL 错误
+  page = Math.max(1, Math.floor(Number(page) || 1))
+  pageSize = Math.max(1, Math.min(100, Math.floor(Number(pageSize) || 10)))
+  const categoryNum = Number(categoryId)
   let sql = 'SELECT id, categoryId, title, price, originalPrice, sales, img, tags FROM goods WHERE 1=1'
   const params = []
-  if (Number(categoryId)) {
+  if (categoryNum) {
     sql += ' AND categoryId = ?'
-    params.push(Number(categoryId))
+    params.push(categoryNum)
   }
   if (keyword) {
     sql += ' AND title LIKE ?'
@@ -19,9 +23,9 @@ router.get('/', async (req, res) => {
   const countSql = sql.replace('SELECT id, categoryId, title, price, originalPrice, sales, img, tags', 'SELECT COUNT(*) AS total')
   const [[{ total }]] = await pool.query(countSql, params)
 
-  const start = (Number(page) - 1) * Number(pageSize)
+  const start = (page - 1) * pageSize
   sql += ' ORDER BY sales DESC LIMIT ? OFFSET ?'
-  params.push(Number(pageSize), start)
+  params.push(pageSize, start)
   const [list] = await pool.query(sql, params)
 
   res.ok({
@@ -34,10 +38,14 @@ router.get('/', async (req, res) => {
 
 // GET /api/goods/:id 商品详情
 router.get('/:id', async (req, res) => {
-  const { id } = req.params
+  const id = Number(req.params.id)
+  // 边界防御：非数字或非正整数
+  if (!id || id < 1 || !Number.isInteger(id)) {
+    return res.fail('无效的商品ID', 400)
+  }
   const [rows] = await pool.query(
     'SELECT * FROM goods WHERE id = ?',
-    [Number(id)]
+    [id]
   )
   if (!rows.length) return res.fail('商品不存在', 404)
   const g = rows[0]

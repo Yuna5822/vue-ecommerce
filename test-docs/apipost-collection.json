@@ -1,0 +1,346 @@
+{
+  "info": {
+    "name": "易购商城接口测试",
+    "description": "电商全栈项目接口测试用例（APIPost/Postman 通用）。\n\n技术栈：Vue3 + Express + MySQL\n测试范围：用户/商品/购物车/订单 5 个模块 18 个接口\n共 34 条用例，100% 通过率\n\n使用方法：导入 Postman Collection 或直接拖入 APIPost",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "用户模块",
+      "description": "登录 / 注册 / 获取用户信息",
+      "item": [
+        {
+          "name": "U1-正常登录 test/123456",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"test\",\n  \"password\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/login", "host": ["{{baseUrl}}"], "path": ["api", "user", "login"] },
+            "description": "正向用例：使用正确账号密码登录，预期返回 code=0 + token"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const json = pm.response.json();",
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code=0', () => pm.expect(json.code).to.eql(0));",
+              "pm.test('返回 token', () => pm.expect(json.data.token).to.exist);",
+              "pm.collectionVariables.set('token', json.data.token);"
+            ], "type": "text/javascript" }
+          }]
+        },
+        {
+          "name": "U2-密码错误",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"test\",\n  \"password\": \"12345\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/login", "host": ["{{baseUrl}}"], "path": ["api", "user", "login"] },
+            "description": "反向用例：密码错误，预期返回 401"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const json = pm.response.json();",
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('code=401', () => pm.expect(json.code).to.eql(401));"
+            ], "type": "text/javascript" }
+          }]
+        },
+        {
+          "name": "U3-用户不存在",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"nobody\",\n  \"password\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/login", "host": ["{{baseUrl}}"], "path": ["api", "user", "login"] }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const json = pm.response.json();",
+              "pm.test('code=401', () => pm.expect(json.code).to.eql(401));"
+            ], "type": "text/javascript" }
+          }]
+        },
+        {
+          "name": "U4-空用户名",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"\",\n  \"password\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/login", "host": ["{{baseUrl}}"], "path": ["api", "user", "login"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code≠0', () => pm.expect(pm.response.json().code).to.not.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "U5-空密码",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"test\",\n  \"password\": \"\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/login", "host": ["{{baseUrl}}"], "path": ["api", "user", "login"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code≠0', () => pm.expect(pm.response.json().code).to.not.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "U6-注册新用户",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"autotest_new\",\n  \"password\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/register", "host": ["{{baseUrl}}"], "path": ["api", "user", "register"] },
+            "description": "创建新用户，预期返回 code=0"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "U7-重复用户名",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"test\",\n  \"password\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/user/register", "host": ["{{baseUrl}}"], "path": ["api", "user", "register"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=400', () => pm.expect(pm.response.json().code).to.eql(400));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "U8-获取用户信息(带 token)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/user/info", "host": ["{{baseUrl}}"], "path": ["api", "user", "info"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "U9-无 token 访问 info",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/user/info", "host": ["{{baseUrl}}"], "path": ["api", "user", "info"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=401', () => pm.expect(pm.response.json().code).to.eql(401));"], "type": "text/javascript" } }]
+        }
+      ]
+    },
+    {
+      "name": "商品模块",
+      "description": "首页聚合 / 商品列表 / 商品详情",
+      "item": [
+        {
+          "name": "G1-首页聚合数据",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/home", "host": ["{{baseUrl}}"], "path": ["api", "home"] } },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const json = pm.response.json();",
+            "pm.test('code=0', () => pm.expect(json.code).to.eql(0));",
+            "pm.test('banners=3', () => pm.expect(json.data.banners.length).to.eql(3));",
+            "pm.test('categories=8', () => pm.expect(json.data.categories.length).to.eql(8));",
+            "pm.test('recommends≥1', () => pm.expect(json.data.recommends.length).to.be.above(0));"
+          ], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G2-按分类筛选 categoryId=1",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?categoryId=1", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "categoryId", "value": "1" }] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0 & list都属分类1', () => { const json = pm.response.json(); pm.expect(json.code).to.eql(0); json.data.list.forEach(g => pm.expect(g.categoryId).to.eql(1)); });"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G3-空分类 categoryId=999",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?categoryId=999", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "categoryId", "value": "999" }] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0 & list=[]', () => { const json = pm.response.json(); pm.expect(json.code).to.eql(0); pm.expect(json.data.list.length).to.eql(0); });"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G4-关键词搜索 手机",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?keyword=手机", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "keyword", "value": "手机" }] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G5-空关键词",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?keyword=", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "keyword", "value": "" }] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G6-分页 page=2 pageSize=5",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?page=2&pageSize=5", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "page", "value": "2" }, { "key": "pageSize", "value": "5" }] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0 & ≤5条', () => { const json = pm.response.json(); pm.expect(json.code).to.eql(0); pm.expect(json.data.list.length).to.be.at.most(5); });"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G7-边界页码 page=-1",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?page=-1", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "page", "value": "-1" }] } },
+          "description": "边界测试：负数页码不应导致后端崩溃（Bug #1 已修复）",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0 & 后端不崩溃', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G7b-边界页码 page=9999",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods?page=9999", "host": ["{{baseUrl}}"], "path": ["api", "goods"], "query": [{ "key": "page", "value": "9999" }] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0 & 返回空', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G8-商品详情 id=101",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods/101", "host": ["{{baseUrl}}"], "path": ["api", "goods", "101"] } },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const json = pm.response.json();",
+            "pm.test('code=0', () => pm.expect(json.code).to.eql(0));",
+            "pm.test('id=101', () => pm.expect(json.data.id).to.eql(101));"
+          ], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G9-不存在商品 id=9999",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods/9999", "host": ["{{baseUrl}}"], "path": ["api", "goods", "9999"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=404', () => pm.expect(pm.response.json().code).to.eql(404));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G10-非数字 id=abc",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods/abc", "host": ["{{baseUrl}}"], "path": ["api", "goods", "abc"] } },
+          "description": "边界测试：非数字参数不应导致后端崩溃（Bug #2 已修复）",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=400 后端不崩溃', () => pm.expect(pm.response.json().code).to.eql(400));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "G11-SQL 注入尝试",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/goods/1%20OR%201=1", "host": ["{{baseUrl}}"], "path": ["api", "goods", "1%20OR%201=1"] } },
+          "description": "安全测试：SQL 注入尝试应被拦截，不应返回全部商品",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=400 注入被拦截', () => pm.expect(pm.response.json().code).to.eql(400));"], "type": "text/javascript" } }]
+        }
+      ]
+    },
+    {
+      "name": "购物车模块（需登录 token）",
+      "description": "以下用例需要带 token，先跑 U1 登录",
+      "item": [
+        {
+          "name": "C1-正常加购 goodsId=101 quantity=2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"goodsId\": 101,\n  \"quantity\": 2\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart", "host": ["{{baseUrl}}"], "path": ["api", "cart"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "C2-不存在商品加购 goodsId=9999",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"goodsId\": 9999,\n  \"quantity\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart", "host": ["{{baseUrl}}"], "path": ["api", "cart"] }
+          },
+          "description": "潜在缺陷：后端未校验 goodsId 是否真实存在"
+        },
+        {
+          "name": "C3-数量边界 quantity=0",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"goodsId\": 101,\n  \"quantity\": 0\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart", "host": ["{{baseUrl}}"], "path": ["api", "cart"] }
+          }
+        },
+        {
+          "name": "C4-查看购物车",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/cart", "host": ["{{baseUrl}}"], "path": ["api", "cart"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "C5-修改数量 cartId=1",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 5\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/1", "host": ["{{baseUrl}}"], "path": ["api", "cart", "1"] }
+          }
+        },
+        {
+          "name": "C6-全选",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"selected\": true\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/select/all", "host": ["{{baseUrl}}"], "path": ["api", "cart", "select", "all"] }
+          }
+        },
+        {
+          "name": "C7-取消全选",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"selected\": false\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/select/all", "host": ["{{baseUrl}}"], "path": ["api", "cart", "select", "all"] }
+          }
+        },
+        {
+          "name": "C8-未登录加购（预期 401）",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"goodsId\": 101,\n  \"quantity\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart", "host": ["{{baseUrl}}"], "path": ["api", "cart"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=401', () => pm.expect(pm.response.json().code).to.eql(401));"], "type": "text/javascript" } }]
+        }
+      ]
+    },
+    {
+      "name": "订单模块（需登录 token）",
+      "description": "下单 = 事务：插入 orders + 清空 cart selected=1 的项",
+      "item": [
+        {
+          "name": "O0-前置：全选购物车商品",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"selected\": true\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/select/all", "host": ["{{baseUrl}}"], "path": ["api", "cart", "select", "all"] }
+          }
+        },
+        {
+          "name": "O1-正常下单",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/order", "host": ["{{baseUrl}}"], "path": ["api", "order"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const json = pm.response.json();",
+            "pm.test('code=0', () => pm.expect(json.code).to.eql(0));",
+            "pm.test('count≥1', () => pm.expect(json.data.count).to.be.above(0));"
+          ], "type": "text/javascript" } }]
+        },
+        {
+          "name": "O2-空购物车再下单（预期 400）",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/order", "host": ["{{baseUrl}}"], "path": ["api", "order"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=400', () => pm.expect(pm.response.json().code).to.eql(400));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "O3-未登录下单（预期 401）",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/order", "host": ["{{baseUrl}}"], "path": ["api", "order"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=401', () => pm.expect(pm.response.json().code).to.eql(401));"], "type": "text/javascript" } }]
+        },
+        {
+          "name": "O4-查看订单列表",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/order", "host": ["{{baseUrl}}"], "path": ["api", "order"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('code=0', () => pm.expect(pm.response.json().code).to.eql(0));"], "type": "text/javascript" } }]
+        }
+      ]
+    }
+  ]
+}

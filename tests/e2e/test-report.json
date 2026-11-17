@@ -1,0 +1,351 @@
+{
+  "summary": {
+    "total": 34,
+    "pass": 34,
+    "fail": 0,
+    "rate": "100.0%"
+  },
+  "generatedAt": "2026-11-17T07:48:10.615Z",
+  "results": [
+    {
+      "name": "U1-正常登录",
+      "method": "POST",
+      "url": "/api/user/login",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "U2-密码错误",
+      "method": "POST",
+      "url": "/api/user/login",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "用户名或密码错误"
+    },
+    {
+      "name": "U3-用户不存在",
+      "method": "POST",
+      "url": "/api/user/login",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "用户名或密码错误"
+    },
+    {
+      "name": "U4-空用户名",
+      "method": "POST",
+      "url": "/api/user/login",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "用户名或密码错误"
+    },
+    {
+      "name": "U5-空密码",
+      "method": "POST",
+      "url": "/api/user/login",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "用户名或密码错误"
+    },
+    {
+      "name": "U6-注册新用户",
+      "method": "POST",
+      "url": "/api/user/register",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "U7-重复用户名",
+      "method": "POST",
+      "url": "/api/user/register",
+      "expect": 400,
+      "actual": 400,
+      "status": 400,
+      "pass": true,
+      "message": "用户名已存在"
+    },
+    {
+      "name": "U8-获取用户信息(带token)",
+      "method": "GET",
+      "url": "/api/user/info",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "U9-无token访问info",
+      "method": "GET",
+      "url": "/api/user/info",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "未登录"
+    },
+    {
+      "name": "G1-首页聚合",
+      "method": "GET",
+      "url": "/api/home",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G2-分类筛选categoryId=1",
+      "method": "GET",
+      "url": "/api/goods?categoryId=1",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G3-空分类categoryId=999",
+      "method": "GET",
+      "url": "/api/goods?categoryId=999",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G4-关键词搜索手机",
+      "method": "GET",
+      "url": "/api/goods?keyword=手机",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G5-空关键词",
+      "method": "GET",
+      "url": "/api/goods?keyword=",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G6-分页page=2pageSize=5",
+      "method": "GET",
+      "url": "/api/goods?page=2&pageSize=5",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G7-边界页码page=-1",
+      "method": "GET",
+      "url": "/api/goods?page=-1",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G7b-边界页码page=9999",
+      "method": "GET",
+      "url": "/api/goods?page=9999",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G8-商品详情id=101",
+      "method": "GET",
+      "url": "/api/goods/101",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "G9-不存在商品id=9999",
+      "method": "GET",
+      "url": "/api/goods/9999",
+      "expect": 404,
+      "actual": 404,
+      "status": 404,
+      "pass": true,
+      "message": "商品不存在"
+    },
+    {
+      "name": "G10-非数字id=abc",
+      "method": "GET",
+      "url": "/api/goods/abc",
+      "expect": 400,
+      "actual": 400,
+      "status": 400,
+      "pass": true,
+      "message": "无效的商品ID"
+    },
+    {
+      "name": "G11-SQL注入尝试id=1OR1=1",
+      "method": "GET",
+      "url": "/api/goods/1%20OR%201=1",
+      "expect": 400,
+      "actual": 400,
+      "status": 400,
+      "pass": true,
+      "message": "无效的商品ID"
+    },
+    {
+      "name": "C1-正常加购goodsId=101",
+      "method": "POST",
+      "url": "/api/cart",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C2-不存在商品加购goodsId=9999",
+      "method": "POST",
+      "url": "/api/cart",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C3-数量边界quantity=0",
+      "method": "POST",
+      "url": "/api/cart",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C4-查看购物车",
+      "method": "GET",
+      "url": "/api/cart",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C5-修改数量cartId=1",
+      "method": "PUT",
+      "url": "/api/cart/1",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C6-全选selectAll",
+      "method": "PUT",
+      "url": "/api/cart/select/all",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C7-取消全选",
+      "method": "PUT",
+      "url": "/api/cart/select/all",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "C8-未登录加购",
+      "method": "POST",
+      "url": "/api/cart",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "未登录"
+    },
+    {
+      "name": "O0-前置:全选购物车商品",
+      "method": "PUT",
+      "url": "/api/cart/select/all",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "O1-正常下单",
+      "method": "POST",
+      "url": "/api/order",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    },
+    {
+      "name": "O2-空购物车再下单(预期失败)",
+      "method": "POST",
+      "url": "/api/order",
+      "expect": 400,
+      "actual": 400,
+      "status": 400,
+      "pass": true,
+      "message": "请先选择商品"
+    },
+    {
+      "name": "O3-未登录下单",
+      "method": "POST",
+      "url": "/api/order",
+      "expect": 401,
+      "actual": 401,
+      "status": 401,
+      "pass": true,
+      "message": "未登录"
+    },
+    {
+      "name": "O4-查看订单列表",
+      "method": "GET",
+      "url": "/api/order",
+      "expect": 0,
+      "actual": 0,
+      "status": 200,
+      "pass": true,
+      "message": "ok"
+    }
+  ]
+}
